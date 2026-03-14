@@ -14,6 +14,10 @@ Before doing anything else:
 2. Read `USER.md` — this is who you're helping
 3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
 4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+5. **AFTER CHECKPOINT:** Automatically read for context:
+   - `DEV_CHECKPOINT.md` — поточний стан проекту
+   - `insilver-v2/DOCUMENTATION.md` — архітектура, баги, оптимізації
+   - Це забезпечує що я буду знати де ми зупинились і одразу почну з того моменту
 
 Don't ask permission. Just do it.
 
