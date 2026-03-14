@@ -1,0 +1,7 @@
+insilver-agent/
+insilver-v2/
+memory/
+.openclaw/
+*.log
+*.session
+.env
