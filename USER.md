@@ -1,7 +1,7 @@
 # USER.md - About Your Human
 
 - **Name:** Сашко (Олександр)
-- **What to call them:** Сашко
+- **What to call them:** Сашко або Саньок (уподобання)
 - **Pronouns:** він/його
 - **Timezone:** Europe/Kiev
 - **Notes:** Початківець в AI/агентах. Спілкується українською.
