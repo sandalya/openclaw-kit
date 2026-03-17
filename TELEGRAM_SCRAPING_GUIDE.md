@@ -7,7 +7,7 @@
 
 ```bash
 # Переходимо в старий проект з готовим скрейпером
-cd /home/sashok/.openclaw/workspace/insilver-agent
+# cd /home/sashok/.openclaw/workspace/insilver-agent  # ЗАСТАРІЛО: папка видалена
 
 # Активуємо віртуальне середовище
 source venv/bin/activate
