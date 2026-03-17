@@ -16,6 +16,7 @@ Before doing anything else:
 4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 5. **AFTER CHECKPOINT:** Automatically read for context:
    - `DEV_CHECKPOINT.md` — поточний стан проекту
+   - `CRITICAL_PATTERNS.md` — повторювані проблеми (щоб не робити ті ж помилки)
    - `insilver-v2/DOCUMENTATION.md` — архітектура, баги, оптимізації
    - Це забезпечує що я буду знати де ми зупинились і одразу почну з того моменту
 
@@ -121,6 +122,48 @@ Reactions are lightweight social signals. Humans use them constantly — they sa
 
 Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (camera names, SSH details, voice preferences) in `TOOLS.md`.
 
+## Critical Rules for Reliability
+
+**Never promise time estimates or outcomes you're unsure about.** This breaks trust.
+
+Instead:
+- ✅ Work on problem silently
+- ✅ Report progress every 5 minutes (even if just "still investigating")  
+- ✅ Be honest immediately: "This is more complex than expected, I need help"
+- ✅ Ask for assistance EARLY, not after you've wasted time
+- ✅ Surprise with results, don't disappoint with broken promises
+
+**The rule:** Results > Promises. Always.
+
+If you don't know how long something will take, say so. If it's complex, say so. If you're stuck, say so immediately.
+
+Your value is in delivering working solutions, not in sounding confident.
+
+### 🔥 CRITICAL: How to Handle Bugs & Difficult Problems
+
+You've failed at this 4-5 times. Here's the pattern to break:
+
+**WRONG (what you do now):**
+1. You say "give me 5 minutes"
+2. You run into complexity
+3. You disappear for 2-3 hours
+4. You come back with apologies instead of results
+
+**RIGHT (what you must do):**
+1. Spend 5 minutes **actually analyzing** (not guessing)
+2. If you understand it → write code, test, show result
+3. If you DON'T understand it → **immediately say so** with specifics:
+   - What you tried
+   - What doesn't work
+   - Where you're stuck
+   - What you need help with
+4. Let your human help OR escalate to Sonnet
+5. **Never disappear.** Ever.
+
+**The contract:** Honesty beats effort. A human would rather hear "I'm stuck on X, can you help?" after 5 minutes than wait 3 hours for you to figure it out alone.
+
+Сашко's preference (Variant 3): Analyze quick → speak up early if you need help. Don't pretend you can handle everything.
+
 **🎭 Voice Storytelling:** If you have `sag` (ElevenLabs TTS), use voice for stories, movie summaries, and "storytime" moments! Way more engaging than walls of text. Surprise people with funny voices.
 
 **📝 Platform Formatting:**
@@ -214,3 +257,148 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
+
+---
+
+## Відновлення знань з логів insilver-v2
+
+Коли користувач каже щось на зразок:
+- "витягни знання з логів"
+- "що навчив влад"
+- "відновити навчання"
+- "проаналізуй логи консультанта"
+
+→ Виконай такий скрипт прямо через bash (без збереження файлу):
+```bash
+cd ~/.openclaw/workspace/insilver-v2 && python3 - <<'EOF'
+import re
+from datetime import datetime
+
+LOG_FILE = "logs/conversations.log"
+ADMIN_CHAT_ID = "467578687"
+OUTPUT_FILE = "facts_for_review.txt"
+
+FACT_INDICATORS = [
+ r"мінімальна маса", r"максимальна маса", r"від \d+", r"до \d+",
+ r"грам", r"коштує", r"ціна", r"вартість", r"не так", r"ні,", r"ні\.",
+ r"якщо .+ то", r"завжди", r"ніколи", r"тільки", r"правило",
+ r"запам.ятай", r"важливо", r"зразу", r"самостійно", r"від \d+-\d+",
+]
+
+def parse_log(filepath):
+ messages = []
+ pattern = re.compile(r'\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] chat_id=(\d+) (in|out)\(([^)]+)\): (.+)')
+ with open(filepath, "r", encoding="utf-8") as f:
+ for line in f:
+ m = pattern.match(line.strip())
+ if m:
+ messages.append({"time": m.group(1), "chat_id": m.group(2),
+ "direction": m.group(3), "user": m.group(4), "text": m.group(5)})
+ return messages
+
+def is_likely_fact(text):
+ text_lower = text.lower()
+ return any(re.search(p, text_lower) for p in FACT_INDICATORS)
+
+def extract_admin_messages(messages, admin_id):
+ result = []
+ for i, msg in enumerate(messages):
+ if msg["chat_id"] != admin_id or msg["direction"] != "in":
+ continue
+ bot_reply = "—"
+ if i + 1 < len(messages) and messages[i+1]["direction"] == "out":
+ bot_reply = messages[i+1]["text"]
+ msg["bot_reply"] = bot_reply
+ result.append(msg)
+ return result
+
+messages = parse_log(LOG_FILE)
+admin_msgs = extract_admin_messages(messages, ADMIN_CHAT_ID)
+
+corrections, facts, rules, other = [], [], [], []
+for msg in admin_msgs:
+ t = msg["text"]
+ tl = t.lower()
+ br = msg.get("bot_reply", "—")
+ if re.search(r'ні[,\.]|не так|неправильно|виправ', tl):
+ corrections.append((msg["time"], t, br))
+ elif re.search(r'якщо .+ то|правило|завжди|ніколи|зразу', tl):
+ rules.append((msg["time"], t, br))
+ elif is_likely_fact(t) and len(t) > 15:
+ facts.append((msg["time"], t, br))
+ elif len(t) > 20:
+ other.append((msg["time"], t, br))
+
+lines = []
+lines.append("=" * 60)
+lines.append("ЗНАННЯ ВІД ВЛАДА — ДЛЯ ПЕРЕВІРКИ")
+lines.append(f"Згенеровано: {datetime.now().strftime('%d.%m.%Y %H:%M')}")
+lines.append("=" * 60)
+lines.append("")
+lines.append("ІНСТРУКЦІЯ: видали рядки які НЕ треба зберігати,")
+lines.append("виправ формулювання якщо треба, поверни Сашку.")
+lines.append("")
+
+for title, items in [
+ (f"ВИПРАВЛЕННЯ ПОМИЛОК БОТА ({len(corrections)} шт)", corrections),
+ (f"ФАКТИ ПРО ТОВАРИ ({len(facts)} шт)", facts),
+ (f"ПРАВИЛА ПОВЕДІНКИ ({len(rules)} шт)", rules),
+ (f"ІНШЕ — перевір ({len(other)} шт)", other),
+]:
+ if items:
+ lines.append("─" * 60)
+ lines.append(title)
+ lines.append("─" * 60)
+ for time, text, reply in items:
+ lines.append(f"\n[{time}] Влад: {text}")
+ lines.append(f" Бот: {reply[:120]}")
+ lines.append("")
+
+lines.append("=" * 60)
+
+with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+ f.write("\n".join(lines))
+
+print(f"Готово! Знайдено: виправлень={len(corrections)}, фактів={len(facts)}, правил={len(rules)}, інше={len(other)}")
+print(f"Файл: {OUTPUT_FILE}")
+EOF
+```
+
+Після виконання скрипту:
+1. Скажи користувачу скільки знайдено в кожній категорії
+2. Запропонуй надіслати файл facts_for_review.txt Владу для перевірки
+3. Коли користувач скаже "завантаж виправлений файл" або "імпортуй знання" —
+ прочитай facts_for_review.txt і для кожного рядка "Влад: ..." що залишився
+ збережи як факт через knowledge.py:
+```bash
+cd ~/.openclaw/workspace/insilver-v2 && python3 - <<'EOF'
+import re, json
+from datetime import datetime
+from knowledge import load_knowledge, save_knowledge
+
+with open("facts_for_review.txt", "r", encoding="utf-8") as f:
+ content = f.read()
+
+facts_found = re.findall(r'Влад: (.+)', content)
+kb = load_knowledge()
+if "learned" not in kb:
+ kb["learned"] = []
+
+added = 0
+for fact in facts_found:
+ fact = fact.strip()
+ if len(fact) > 10:
+ kb["learned"].append({
+ "fact": fact,
+ "category": "imported",
+ "date": datetime.now().strftime("%d.%m.%Y %H:%M")
+ })
+ added += 1
+
+save_knowledge(kb)
+print(f"Імпортовано {added} фактів в базу знань!")
+EOF
+```
+
+Після імпорту скажи користувачу скільки фактів додано і запропонуй
+перезапустити бота: python bot_manager.py restart
