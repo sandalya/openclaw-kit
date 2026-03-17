@@ -241,6 +241,40 @@ You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it
 - Commit and push your own changes
 - **Review and update MEMORY.md** (see below)
 
+## 📋 CHECKPOINT ПРОЦЕС - КРИТИЧНО ВАЖЛИВО
+
+**НЕ ГУБИ ЦІ ІНСТРУКЦІЇ! 3+ рази вже губив - це неприйнятно.**
+
+### Дії при checkpoint ("чкп"):
+1. **Оновити документацію** (dev + insilver) по тому що зробили за сесію
+2. **Dev report** - щоб було зрозуміло з чого починати наступну сесію  
+3. **Комітити ОБА репо** (openclaw-kit + insilver-v2)
+4. **Компакт сесії** якщо потрібно
+5. **На початку нової сесії** - читати документацію для контексту
+
+### Формат checkpoint повідомлення:
+```
+✅ Checkpoint YYYY-MM-DD-HH:MM
+
+📦 insilver-v2 [git_hash]
+ + ✅ ВИПРАВЛЕНО КРИТИЧНІ БАГИ:
+ - [конкретні баги]
+ + 💰 ОНОВЛЕНО [категорія]:
+ - [зміни]
+ + 📝 ДОДАНО [що]:
+ - [деталі]
+ + 📊 АНАЛІЗ:
+ - [файли аналізу]
+ + 🧪 ТЕСТИ: ✅ [результат]
+ + 🤖 БОТ: ✅ [статус]
+
+🐱 openclaw-kit [git_hash або "без змін"]
+
+Готово! [короткий підсумок]
+```
+
+**ПРАВИЛО:** Цей процес НЕЗМІННИЙ. Не вигадувати щоразу нового.
+
 ### 🔄 Memory Maintenance (During Heartbeats)
 
 Periodically (every few days), use a heartbeat to:
