@@ -47,14 +47,25 @@ ps aux | grep main.py | grep -v grep
 ```
 insilver-v3/
 ├── core/config.py, lock.py, prompt.py, ai.py, catalog.py, order_context.py, order_config.py
-├── bot/client.py, order.py
-├── data/site_catalog.json, photos/site/, orders/orders.json, knowledge/knowledge.json, silver.json
+├── core/conversation_logger.py, backup_system.py, log_analyzer.py
+├── bot/client.py, order.py, admin.py (повна адмін панель)
+├── data/knowledge/training.json (база знань з v2), media/, site_catalog.json, orders/orders.json
+├── logs/conversations.log, training_backups/
+├── dev_recovery.py (розробницький інструмент)
 └── main.py
 ```
 
-## Фаза 4 (наступне)
+## Розробницькі інструменти
+```bash
+# Відновлення даних (для розробників)
+cd ~/.openclaw/workspace/insilver-v3
+python3 dev_recovery.py --status   # статус системи
+python3 dev_recovery.py --recover  # повне відновлення
+```
 
-1. `/admin learn` — навчання бота (текст + фото), перегляд, видалення
-2. `/admin update` — оновлення каталогу
-3. Збереження історії в БД
-4. Дев через окремий TG бот (вже є — openclaw)
+## Поточна фаза: Інтеграція знань
+
+1. ✅ Міграція v2→v3 завершена (27 записів)
+2. ✅ UX покращення (автопереходи, редагування)
+3. 🔄 Підтвердження непідтверджених записів через /admin
+4. 🚀 Інтеграція навчальних даних в AI промпт консультанта
