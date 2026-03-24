@@ -1,7 +1,22 @@
 insilver-agent/
 insilver-v2/
 memory/
+archive/
 .openclaw/
 *.log
 *.session
 .env
+
+# Оптимізація: виключити великі файли з workspace
+*.jpg
+*.png
+*.gif
+*.mp4
+*.avi
+*.json
+*.zip
+*.tar.gz
+**/venv/
+**/.git/
+**/node_modules/
+**/__pycache__/
