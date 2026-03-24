@@ -24,10 +24,22 @@
 - [ ] Видалити `*_backup.py`, `*_old.py` — репозиторій 133MB, треба зменшити
 - [ ] Архівувати `test_*` файли
 
+### 🔧 Міграція корисних інструментів з v2
+- [ ] **bot_manager.py** — гарантує один інстанс бота (проти дублікатів)
+- [ ] **monitor_bot.py** — health check + auto-restart (проти downtime)
+- [ ] **analyze_logs.py** — статистика роботи бота
+- [ ] **enhanced photo search** — покращений пошук фото
+- [ ] Оновити master-tester.py → autotester.py (5 рівнів)
+
 ### Git hygiene
 - [ ] Щоденний `git status` обох репо
 - [ ] Комітити зміни з описовими повідомленнями
 - [ ] Не пушити в `insilver-v3/` без підтвердження Сашка
+
+### Автотестування
+- [x] `autotester.py` створено — швидка перевірка якості коду
+- [ ] Запускати `python3 autotester.py` перед кожним commit
+- [ ] Виправити import помилки (venv, назви функцій)
 
 ---
 
@@ -81,14 +93,17 @@ stress-ng --cpu 2 --timeout 60s --metrics-brief
 
 ### 🟢 Пріоритет: Система фото "Красівенькое"
 
-З `FUTURE_IDEAS.md` — додати `beauty_score` до photo_index:
+**Основа з v2:** `automated_vision_tester.py` — готовий інструмент Vision AI тестування
+- [x] Знайдено automated_vision_tester.py в v2
+- [ ] Мігрувати та адаптувати під v3 структуру
+- [ ] Додати beauty_score до photo_index.json
 ```python
 # Розширення photo_index.json
 {"photo": "...", "type": "браслет", "beauty_score": 8.5, "quality_tags": ["чітке", "гарне_освітлення"]}
 ```
-- Спочатку вручну оцінити ТОП-50 фото
-- Потім — AI оцінка через Vision API
-- Метрика: клієнти бачать тільки `beauty_score >= 7` за замовчуванням
+- [ ] Інтегрувати з enhanced_photo_search.py з v2
+- [ ] Автоматична оцінка через Vision API
+- [ ] Метрика: клієнти бачать тільки `beauty_score >= 7`
 
 ### 🟢 Пріоритет: AI файли merge
 
