@@ -1,228 +1,132 @@
-# MEMORY.md - Довгострокова пам'ять Кіта
+# MEMORY.md — Кіт
 
-## InSilver v3 - Telegram Бот для Ювелірної Майстерні
-
-**Статус:** 🔄 Активна розробка  
-**Сервер:** Raspberry Pi 5  
-**Версія:** v3 (міграція з v2)
-**Власник майстерні:** Влад  
-**Розробник:** Сашко
+> Курована довгострокова пам'ять. Оновлювати кожні кілька днів.
+> Сирі логи → `memory/YYYY-MM-DD.md`. Сюди — тільки важливе.
 
 ---
 
-## 🏗️ АРХІТЕКТУРА v3
+## Проект: InSilver v3
 
-### Структура проекту:
+**Що це:** Telegram-бот консультант для ювелірної майстерні Влада. Клієнти — українці.
+**Стек:** Python 3.11, python-telegram-bot, OpenAI GPT-4, Pi5, systemd, JSON
+**Репозиторій:** `~/.openclaw/workspace/insilver-v3/`
+**Сервіс:** `insilver-v3.service`
+
+### Ключові файли які чіпаєш найчастіше
 ```
-insilver-v3/
-├── main.py                    # Точка входу, Telegram інтеграція
-├── core/                      # Основна бізнес-логіка
-│   ├── config.py             # Конфігурація системи
-│   ├── ai.py                 # AI інтеграція (OpenAI GPT-4)
-│   ├── prompt.py             # AI промпти
-│   ├── catalog.py            # Каталог виробів
-│   ├── order_context.py      # Контекст замовлень
-│   ├── order_config.py       # Налаштування замовлень
-│   ├── conversation_logger.py # Логування діалогів
-│   ├── backup_system.py      # Система резервного копіювання
-│   ├── log_analyzer.py       # Аналізатор логів
-│   ├── health.py             # Health моніторинг
-│   ├── photo.py              # Обробка фото
-│   └── lock.py               # Блокування процесів
-├── bot/                      # Telegram bot handlers
-│   ├── client.py            # Клієнтська частина (12KB)
-│   ├── admin.py             # Адмін панель (88KB) - повний інтерфейс
-│   └── order.py             # Обробка замовлень (16KB)
-├── data/                    # Дані
-│   ├── knowledge/           # База знань
-│   │   ├── training.json   # 15 записів Q&A для консультанта
-│   │   └── media/          # Медіа файли знань
-│   ├── orders/             # Замовлення клієнтів
-│   ├── photos/site/        # Фото з сайту
-│   ├── silver.json         # Базові налаштування
-│   └── site_catalog.json   # Каталог сайту (1.3MB)
-├── logs/                   # Логи системи
-│   ├── bot.log            # Основні логи бота
-│   ├── conversations.log  # Діалоги з клієнтами
-│   └── training_backups/  # Бекапи навчальних даних
-└── scripts/               # Допоміжні скрипти
+main.py # точка входу — не чіпати без потреби
+core/ai.py + core/prompt.py # AI логіка консультанта
+core/catalog.py # ціни, плетіння, маси — бізнес-дані Влада
+bot/admin.py # 88KB — найбільший файл, обережно
+bot/client.py # клієнтська частина
+data/knowledge/training.json # 15 Q&A записів — ядро консультанта
 ```
 
-### Ключові модулі:
-
-**🤖 AI Система:**
-- `ai.py` - OpenAI GPT-4 інтеграція
-- `prompt.py` - Промпти консультанта
-- `training.json` - 15 записів навчальних даних з v2
-
-**📦 Замовлення:**
-- `order_context.py` - Стан і контекст замовлення
-- `order.py` - Telegram handlers для замовлень
-- `catalog.py` - Каталог виробів і цін
-
-**🔧 Система:**
-- `health.py` - Моніторинг Pi5
-- `backup_system.py` - Автобекап даних
-- `conversation_logger.py` - Логи клієнтів
+### Структура training.json
+```json
+{"title": "питання", "content": [{"text": "відповідь"}]}
+```
+15 записів. Перенесено з v2 (було 27, оптимізовано). Інтегровано в промпт через `prompt.py`.
 
 ---
 
-## 📋 КОМАНДИ ЩОДЕННОГО ВИКОРИСТАННЯ
+## Інфраструктура Pi5
 
-### Systemd команди:
+**Сервіси:**
 ```bash
-# Статус і контроль InSilver
-sudo systemctl status insilver-v3
-sudo systemctl restart insilver-v3
-sudo systemctl stop insilver-v3
-sudo systemctl start insilver-v3
-
-# Статус і контроль OpenClaw (мене)
-sudo systemctl status openclaw
-sudo systemctl restart openclaw
+sudo systemctl status insilver-v3 # статус бота
+sudo systemctl restart insilver-v3 # перезапуск бота
+sudo systemctl status openclaw # мій статус
+sudo systemctl restart openclaw # мій перезапуск
 ```
 
-### Логи та дебаг:
+**Ліміти моніторингу:**
+- CPU > 80% → alert
+- RAM > 85% → критично
+- Перевірка кожні 15 хвилин через `health_monitor.py`
+
+**Логи:**
 ```bash
-# Логи InSilver бота
 tail -f ~/.openclaw/workspace/insilver-v3/logs/bot.log
 tail -20 ~/.openclaw/workspace/insilver-v3/logs/conversations.log
-
-# Логи OpenClaw
 journalctl -u openclaw -f --no-pager
-openclaw logs --follow
-
-# Процеси
-ps aux | grep main.py | grep -v grep
-ps aux | grep python3
 ```
 
-### Git workflow:
+---
+
+## Git workflow Сашка
+
+Чотири команди які він використовує:
 ```bash
-cd ~/.openclaw/workspace/insilver-v3
-git status && git log --oneline -5
-git add -A && git commit -m "feat: опис змін"
-git push
-
-# Мої зміни (workspace)
-cd ~/.openclaw/workspace  
-git status && git add -A && git commit -m "ai: опис"
+гіт # git status + log
+гіткіт # git add -A + commit + push (мої файли)
+фікс # швидкий фікс з повідомленням
+чкп # checkpoint — збереження стану
 ```
 
-### Розробка:
-```bash
-# Структура проекту
-tree -d ~/.openclaw/workspace/insilver-v3
-find ~/.openclaw/workspace/insilver-v3 -name "*.py" -type f
-
-# Здоров'я системи
-python3 ~/.openclaw/workspace/health_monitor.py
-free -m && df -h
-```
+**Два окремих репо:**
+- InSilver: `~/.openclaw/workspace/insilver-v3/`
+- OpenClaw workspace: `~/.openclaw/workspace/`
 
 ---
 
-## 🔥 ТИПОВІ ПРОБЛЕМИ ТА РІШЕННЯ
+## Проблеми які вже були — не наступати знову
 
-### 1. **Дублікати bot процесів (вирішено 2026-03-24)**
-**Проблема:** Декілька копій main.py працюють одночасно → конфлікти токенів
-**Рішення:** 
-```bash
-ps aux | grep main.py | grep -v grep  # перевірити
-sudo systemctl restart insilver-v3    # перезапуск через systemd
-```
-**Профілактика:** Завжди перевіряти процеси перед ручним запуском
+### Дублікати процесів (2026-03-24) ✅ вирішено
+- **Симптом:** Бот не відповідає, помилки токенів
+- **Причина:** Кілька копій `main.py` запущено одночасно
+- **Правило:** Завжди `ps aux | grep main.py` перед запуском
+- **Правило:** Тільки systemd керує процесами, не руками
 
-### 2. **Telegram API conflicts (вирішено)**
-**Проблема:** InSilver і OpenClaw використовували однакові токени
-**Рішення:** Роздільні токени в різних .env файлах:
-- InSilver: `insilver-v3/.env` → `TELEGRAM_TOKEN=8627781342:...`
-- OpenClaw: `workspace/.env` → `TELEGRAM_BOT_TOKEN=8627596455:...`
+### Конфлікт Telegram токенів ✅ вирішено
+- InSilver і OpenClaw мали однакові токени
+- **Зараз:** Роздільні `.env` файли — не змішувати
+ - InSilver: `insilver-v3/.env` → `TELEGRAM_TOKEN`
+ - OpenClaw: `workspace/.env` → `TELEGRAM_BOT_TOKEN`
+- **Правило:** `.env` файли не чіпати, структура незмінна
 
-### 3. **Pi5 падіння під навантаженням (2026-03-24)**
-**Проблема:** ОС падала при інтенсивній роботі бота
-**Рішення:** Systemd обмеження ресурсів + health monitoring
-**Моніторинг:** `health_monitor.py` кожні 15 хвилин
+### Pi5 падіння під навантаженням (2026-03-24) ✅ вирішено
+- Systemd ліміти ресурсів додано
+- Health monitoring активний
+- Alerting при перевищенні лімітів
 
-### 4. **OpenClaw витрати ($150/рік → оптимізація)**
-**Рішення:** 
-- contextPruning TTL: 5min → 2h
-- heartbeat optimization  
-- Cost-aware tool usage
-
-### 5. **База знань v2→v3 міграція**
-**Статус:** ✅ Завершено (27 записів → 15 оптимізованих)
-**Файл:** `data/knowledge/training.json`
-**Формат:** `{"title": "питання", "content": [{"text": "відповідь"}]}`
+### Оптимізація витрат OpenClaw ✅ в процесі
+- Було: ~$150/рік
+- Зроблено: contextPruning TTL 5min → 2h, heartbeat оптимізація
+- Підхід: cost-aware tool usage, розумний checkpoint workflow
 
 ---
 
-## 🎯 ПОТОЧНИЙ СТАН ПРОЕКТУ (2026-03-24)
+## Архітектурні рішення (чому так, а не інакше)
 
-### ✅ ЩО ПРАЦЮЄ СТАБІЛЬНО:
-1. **Telegram Bot Integration**
-   - InSilver консультант: стабільний 1h 39min uptime
-   - OpenClaw розробник: dual-channel (web + telegram)
-   - Роздільні токени, без конфліктів
-
-2. **Навчальна База (15 записів)**
-   - Міграція v2→v3 завершена
-   - Q&A для ювелірних консультацій
-   - Інтеграція в AI промпт працює
-
-3. **Systemd Services**
-   - `insilver-v3.service` - стабільний
-   - `openclaw.service` - стабільний  
-   - Автозапуск після reboot
-
-4. **Git Workflow**
-   - 4 команди: `гіт`, `гіткіт`, `фікс`, `чкп`
-   - Backup система працює
-   - Розділення репозиторіїв
-
-### 🔄 В ПРОЦЕСІ:
-1. **Health Monitoring**
-   - `health_monitor.py` активний
-   - Alerts в `health_alerts.log`
-   - CPU/RAM/Disk контроль
-
-2. **Cost Optimization** 
-   - OpenClaw витрати знижені
-   - Token-aware tool usage
-   - Розумний чекпоінт workflow
-
-### 🚀 ЗАПЛАНОВАНО:
-1. **AI Промпт Покращення**
-   - Інтеграція всіх 15 навчальних записів
-   - Оптимізація відповідей консультанта
-
-2. **Production Stability**
-   - Stress-тести Pi5
-   - Auto-restart механізми
-   - Backup automation
+| Рішення | Причина |
+|---------|---------|
+| JSON замість БД | Простота, достатньо для поточного масштабу |
+| Single Pi5 prod+dev | Зручність, економія |
+| systemd для сервісів | Автозапуск, ізоляція процесів |
+| Git-based backup | Версійність + backup в одному |
 
 ---
 
-## 💡 ІНСАЙТИ ТА NOTES
+## Що зараз в роботі
 
-### Сашко Preferences:
-- 🇺🇦 Тільки українська мова (критично)
-- 💰 Мінімум токенів завжди пріоритет
-- 📁 `.env` структура незмінна ("мені зручно")
-- 🎯 Готові рішення > довгі обговорення
-
-### Архітектурні рішення:
-- **Single Pi5** - розробка + продакшн
-- **JSON файли** замість БД (простота)
-- **Systemd** для процесів (стабільність)  
-- **Git-based** backup (надійність)
-
-### Performance Notes:
-- InSilver: ~10-20 повідомлень/день від клієнтів
-- OpenClaw: ~100+ tool calls/день розробки
-- Pi5 ресурси: критично моніторити RAM > 85%
+- Health моніторинг: активний, logs в `health_alerts.log`
+- Cost optimization: знижено, продовжуємо
+- AI промпт: планується покращення інтеграції 15 записів
+- Stress-тести Pi5: заплановано
 
 ---
 
-*Останнє оновлення: 2026-03-24 22:20*  
-*Git HEAD: 6fa6a56 - OpenClaw cost optimization*
+## Правила роботи з Сашком
+
+- 🇺🇦 Тільки українська — завжди, без винятків
+- Готовий фікс > обговорення. Патч що працює > теорія
+- `git commit` з working solution — ось мета кожної задачі
+- Не пропонувати зміни `.env` структури
+- Мінімум токенів — завжди в голові при виборі підходу
+- Де не знаю бізнес-логіку ювелірки — питаю, не вигадую
+
+---
+
+*Останнє оновлення: 2026-03-24*
+*Наступне оновлення: додати результати stress-тестів Pi5*
