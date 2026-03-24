@@ -1,117 +1,116 @@
 # HEARTBEAT.md — Кіт
 
-## Розклад
+## Базова автоматизація
 
-- Timezone: Europe/Kiev (GMT+2)
-- Активний час Сашка: 10:00–02:00
-- Нічний режим (мовчанка): 02:00–10:00
-- Під час нічного режиму: тільки критичні алерти, решта — в лог
-
----
-
-## Розклад перевірок
-
-| Час | Що перевіряю |
-|-----|-------------|
-| кожні 15 хв | Pi5 ресурси (CPU, RAM, диск) |
-| кожні 5 хв | `systemctl is-active insilver-v3` |
-| кожні 30 хв | дублікати `main.py` процесів |
-| щогодини | розмір логів `bot.log`, `conversations.log` |
-| щодня 10:00 | summary звіт — стан системи за ніч |
+- **Timezone:** Europe/Kiev (GMT+2)  
+- **Активний час:** 10:00–02:00
+- **Нічний режим:** 02:00–10:00 (тільки критичні алерти)
 
 ---
 
-## Рівні алертів
+## Щоденні перевірки
 
-### 🔴 КРИТИЧНО — Telegram одразу (навіть вночі)
+### 🔴 Критичні (завжди алертую):
+```bash
+# 1. InSilver бот активний?
+systemctl is-active insilver-v3
 
-```
-insilver-v3.service не active
-RAM > 90% або swap активний
-CPU > 95% протягом 5+ хвилин
-Диск > 95%
-Дублікати main.py процесів (>1 копія)
-Будь-який python3 процес >2GB RAM
-```
+# 2. Pi5 ресурси в нормі?
+free -m | awk 'NR==2{if($3/$2*100 > 85) print "RAM: "$3/$2*100"%"}'
+df -h / | awk 'NR==2{if(substr($5,1,2) > 90) print "Disk: "$5}'
 
-Формат повідомлення:
-```
-🔴 КРИТИЧНО — [назва проблеми]
-Час: HH:MM
-Деталі: [метрика або помилка]
-Дія: [що зробив або що треба зробити]
+# 3. Немає дублікатів процесів?
+ps aux | grep -c "[m]ain.py"  # має бути 1
 ```
 
-### ⚠️ ВАЖЛИВО — Telegram (тільки 10:00–02:00)
+### ⚠️ Важливі (10:00-02:00):
+```bash
+# 4. Розмір логів
+du -m ~/.openclaw/workspace/insilver-v3/logs/bot.log | awk '{if($1>100) print "bot.log: "$1"MB"}'
 
-```
-RAM 85–90%
-CPU 80–95% (менше 5 хвилин)
-Диск 90–95%
-bot.log > 100MB
-AI відповіді > 10 секунд
-```
-
-Формат повідомлення:
-```
-⚠️ УВАГА — [назва проблеми]
-Час: HH:MM
-Деталі: [метрика]
-```
-
-### 💡 INFO — тільки в логи, не в Telegram
-
-```
-Успішні перезапуски сервісів
-Heartbeat checks OK
-Daily backup complete
-Всі метрики в нормі
-```
-
-Лог: `~/.openclaw/workspace/logs/heartbeat.log`
-
----
-
-## Щоденний ранковий звіт (10:00)
-
-Надсилаю в Telegram короткий підсумок:
-
-```
-🐱 Ранковий звіт — DD.MM.YYYY
-
-InSilver: ✅ active (Xh Ymin uptime)
-Pi5: CPU X% | RAM X% | Диск X%
-Логи: bot.log XMB | conversations.log XMB
-Нічних інцидентів: X
-
-[якщо були інциденти — коротко що і коли]
+# 5. Cost dashboard
+python3 ~/.openclaw/workspace/cost_dashboard.py --quiet
 ```
 
 ---
 
-## Що НЕ роблю без дозволу
+## Автоматичні alerts
 
-- Не перезапускаю `insilver-v3` навіть якщо він впав — алерт і чекаю
-- Не чищу логи автоматично — тільки алерт про розмір
-- Не змінюю конфіги під час моніторингу
+**🔴 Telegram одразу:**
+- `insilver-v3` не active
+- RAM > 85%  
+- Диск > 90%
+- Дублікати main.py (>1 процес)
+
+**⚠️ Telegram (активні години):**
+- bot.log > 100MB
+- Місячні витрати > $10
+
+**💡 Тільки в логи:**
+- Всі перевірки пройшли ОК
+- Cost dashboard результати
 
 ---
 
-## Профілактичні перевірки (раз на тиждень, понеділок 10:00)
+## Ранковий звіт (10:00)
 
 ```bash
-# Перевірити дублікати
-ps aux | grep main.py | grep -v grep
-
-# Стан дисків
-df -h && du -sh ~/.openclaw/workspace/insilver-v3/logs/*
-
-# Git стан обох репо
-cd ~/.openclaw/workspace && git log --oneline -3
-cd ~/.openclaw/workspace/insilver-v3 && git log --oneline -3
-
-# Backup перевірка
-ls -lh ~/.openclaw/workspace/insilver-v3/logs/training_backups/
+# Автоматичний формат для Telegram
+echo "🐱 $(date '+%d.%m.%Y')"
+echo "InSilver: $(systemctl is-active insilver-v3) ($(systemctl show insilver-v3 -p ActiveEnterTimestamp --value | cut -d' ' -f2-3))"
+echo "Pi5: $(free | awk 'NR==2{printf "RAM %d%%", $3/$2*100}') | $(df -h / | awk 'NR==2{printf "Disk %s", $5}')"
+python3 ~/.openclaw/workspace/cost_dashboard.py --quiet
 ```
 
-Результат — в Telegram коротким звітом.
+---
+
+## Що НЕ роблю автоматично
+
+- Не перезапускаю сервіси (тільки алерт + чекаю)
+- Не видаляю файли (тільки попереджую про розмір)  
+- Не змінюю конфіги
+
+---
+
+## Heartbeat schedule (OpenClaw)
+
+```json
+{
+  "heartbeat": {
+    "every": "30m",
+    "target": "telegram", 
+    "activeHours": {
+      "start": "10:00",
+      "end": "02:00"
+    },
+    "lightContext": true
+  }
+}
+```
+
+**Логіка:** Кожні 30 хвилин → перевірити критичні метрики → алерт якщо проблема.
+
+---
+
+## Команди для швидкої діагностики
+
+```bash
+# Статус системи (одна команда)
+echo "=== SYSTEM STATUS ===" && \
+systemctl is-active insilver-v3 && \
+free -m | awk 'NR==2{printf "RAM: %d%%\n", $3/$2*100}' && \
+df -h / | awk 'NR==2{printf "Disk: %s\n", $5}' && \
+ps aux | grep -c "[m]ain.py" && \
+echo "=== END ==="
+
+# Cost швидко
+python3 ~/.openclaw/workspace/cost_dashboard.py --quiet
+
+# Логи швидко  
+tail -5 ~/.openclaw/workspace/insilver-v3/logs/bot.log | grep -E "(ERROR|CRITICAL|Exception)" || echo "No errors"
+```
+
+---
+
+*Спрощено: 2026-03-24*  
+*Фокус: автоматизація через OpenClaw heartbeat + мінімальні скрипти*
