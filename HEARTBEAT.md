@@ -1,54 +1,117 @@
-# HEARTBEAT.md
+# HEARTBEAT.md — Кіт
 
-## 🔍 Системні перевірки (кожна 3-4 heartbeat)
+## Розклад
 
-### Перевірка дублікатів процесів
-```bash
-# Перевірити чи є дублікати bot.py (✅ ВИРІШЕНО 22:16 - відключив Telegram в OpenClaw)
-bot_count=$(ps aux | grep -c "[b]ot.py")
-if [ $bot_count -gt 1 ]; then
-    echo "⚠️ ЗНАЙДЕНО $bot_count копій bot.py! Конфлікт токенів можливий"
-    echo "📋 Перевірити чи не увімкнувся знову Telegram в OpenClaw"
-    ps aux | grep "[b]ot.py"
-else
-    echo "✅ bot.py процесів: $bot_count (норма після кардинального рішення)"
-fi
+- Timezone: Europe/Kiev (GMT+2)
+- Активний час Сашка: 10:00–02:00
+- Нічний режим (мовчанка): 02:00–10:00
+- Під час нічного режиму: тільки критичні алерти, решта — в лог
+
+---
+
+## Розклад перевірок
+
+| Час | Що перевіряю |
+|-----|-------------|
+| кожні 15 хв | Pi5 ресурси (CPU, RAM, диск) |
+| кожні 5 хв | `systemctl is-active insilver-v3` |
+| кожні 30 хв | дублікати `main.py` процесів |
+| щогодини | розмір логів `bot.log`, `conversations.log` |
+| щодня 10:00 | summary звіт — стан системи за ніч |
+
+---
+
+## Рівні алертів
+
+### 🔴 КРИТИЧНО — Telegram одразу (навіть вночі)
+
+```
+insilver-v3.service не active
+RAM > 90% або swap активний
+CPU > 95% протягом 5+ хвилин
+Диск > 95%
+Дублікати main.py процесів (>1 копія)
+Будь-який python3 процес >2GB RAM
 ```
 
-### Статус основних сервісів
-```bash
-# Перевірити InSilver бот
-systemctl is-active insilver-bot --quiet || echo "❌ insilver-bot не працює"
-
-# Перевірити OpenClaw
-pgrep -f openclaw-gateway > /dev/null || echo "❌ openclaw-gateway не працює"
+Формат повідомлення:
+```
+🔴 КРИТИЧНО — [назва проблеми]
+Час: HH:MM
+Деталі: [метрика або помилка]
+Дія: [що зробив або що треба зробити]
 ```
 
-## 🎯 Коли алертити Сашка:
-- Дублікати процесів (критично для Telegram)  
-- Падіння основних сервісів  
-- Помилки в логах bot.py
+### ⚠️ ВАЖЛИВО — Telegram (тільки 10:00–02:00)
 
-## 🔧 Системна стабільність (після ЧП 2026-03-24)
-
-### ✅ Захист Pi5 від падіння бота
-```bash
-# Перевірити systemd обмеження
-sudo systemctl show insilver-v3 | grep -E "(MemoryMax|CPUQuota|TasksMax)"
-
-# Перевірити здоров'я системи  
-python3 ~/.openclaw/workspace/health_monitor.py
-
-# Перевірити health alerts
-tail -10 ~/.openclaw/workspace/health_alerts.log 2>/dev/null || echo "Немає alerts"
+```
+RAM 85–90%
+CPU 80–95% (менше 5 хвилин)
+Диск 90–95%
+bot.log > 100MB
+AI відповіді > 10 секунд
 ```
 
-### ⚠️ КРИТИЧНІ АЛЕРТИ:
-- CPU > 80% або RAM > 85% - потенційний resource leak
-- InSilver bot неактивний - відновити: `sudo systemctl restart insilver-v3`
-- Дисковий простір > 90% - очистити логи
+Формат повідомлення:
+```
+⚠️ УВАГА — [назва проблеми]
+Час: HH:MM
+Деталі: [метрика]
+```
 
-### 🎯 Коли алертити Сашка:
-- Health monitor виявив критичні ресурси 3 рази підряд
-- Bot restart більше 3 разів за годину (StartLimitBurst)
-- Системні помилки в health_alerts.log
+### 💡 INFO — тільки в логи, не в Telegram
+
+```
+Успішні перезапуски сервісів
+Heartbeat checks OK
+Daily backup complete
+Всі метрики в нормі
+```
+
+Лог: `~/.openclaw/workspace/logs/heartbeat.log`
+
+---
+
+## Щоденний ранковий звіт (10:00)
+
+Надсилаю в Telegram короткий підсумок:
+
+```
+🐱 Ранковий звіт — DD.MM.YYYY
+
+InSilver: ✅ active (Xh Ymin uptime)
+Pi5: CPU X% | RAM X% | Диск X%
+Логи: bot.log XMB | conversations.log XMB
+Нічних інцидентів: X
+
+[якщо були інциденти — коротко що і коли]
+```
+
+---
+
+## Що НЕ роблю без дозволу
+
+- Не перезапускаю `insilver-v3` навіть якщо він впав — алерт і чекаю
+- Не чищу логи автоматично — тільки алерт про розмір
+- Не змінюю конфіги під час моніторингу
+
+---
+
+## Профілактичні перевірки (раз на тиждень, понеділок 10:00)
+
+```bash
+# Перевірити дублікати
+ps aux | grep main.py | grep -v grep
+
+# Стан дисків
+df -h && du -sh ~/.openclaw/workspace/insilver-v3/logs/*
+
+# Git стан обох репо
+cd ~/.openclaw/workspace && git log --oneline -3
+cd ~/.openclaw/workspace/insilver-v3 && git log --oneline -3
+
+# Backup перевірка
+ls -lh ~/.openclaw/workspace/insilver-v3/logs/training_backups/
+```
+
+Результат — в Telegram коротким звітом.
