@@ -38,8 +38,12 @@
 
 ### Автотестування
 - [x] `autotester.py` створено — швидка перевірка якості коду
-- [ ] Запускати `python3 autotester.py` перед кожним commit
-- [ ] Виправити import помилки (venv, назви функцій)
+- [x] Покращено до 5 рівнів (як v2 master-tester):
+  - Рівень 1-4: syntax, imports, basic, AI (✅ готово)
+  - Рівень 5: Performance тести швидкості v3 модулів
+- [x] Додано CLI опції: --level N, --ci, --save-report, fail-fast
+- [ ] Запускати `python3 autotester.py` перед кожним commit  
+- [ ] Виправити import помилки (venv активація в тестах)
 
 ---
 
