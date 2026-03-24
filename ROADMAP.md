@@ -25,11 +25,13 @@
 - [ ] Архівувати `test_*` файли
 
 ### 🔧 Міграція корисних інструментів з v2
-- [ ] **bot_manager.py** — гарантує один інстанс бота (проти дублікатів)
-- [ ] **monitor_bot.py** — health check + auto-restart (проти downtime)
-- [ ] **analyze_logs.py** — статистика роботи бота
+- [x] **bot_manager.py** — systemctl wrapper (PID логіка прибрана)
+- [x] **monitor_bot.py** — health check + auto-restart + Telegram alerts
+- [x] **insilver-monitor.service** — systemd сервіс для монітора
+- [x] **install_monitor.sh** — автоматичне встановлення
+- [x] **Claude.AI Prio 1 ЗАВЕРШЕНО** — Health & Stability система готова
+- [ ] **analyze_logs.py** — статистика роботи бота  
 - [ ] **enhanced photo search** — покращений пошук фото
-- [ ] Оновити master-tester.py → autotester.py (5 рівнів)
 
 ### Git hygiene
 - [ ] Щоденний `git status` обох репо
@@ -42,7 +44,10 @@
   - Рівень 1-4: syntax, imports, basic, AI (✅ готово)
   - Рівень 5: Performance тести швидкості v3 модулів
 - [x] Додано CLI опції: --level N, --ci, --save-report, fail-fast
+- [x] **Claude.AI сесія успішна** — повна міграція v2 master-tester функцій
+- [x] Performance тести через subprocess (чисте вимірювання)
 - [ ] Запускати `python3 autotester.py` перед кожним commit  
+- [ ] Опціонально: --fast режим для performance тестів (in-process)
 - [ ] Виправити import помилки (venv активація в тестах)
 
 ---
