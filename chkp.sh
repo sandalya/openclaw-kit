@@ -29,8 +29,12 @@ else
     read -r NEXT_STEP
 fi
 
-echo "Важливий контекст (Enter щоб пропустити):"
-read -r EXTRA
+if [ "$#" -ge 4 ]; then
+    EXTRA="$4"
+else
+    echo "Важливий контекст (Enter щоб пропустити):"
+    read -r EXTRA
+fi
 
 DATE=$(date '+%Y-%m-%d %H:%M')
 SESSION_FILE="$PROJECT_DIR/SESSION.md"
