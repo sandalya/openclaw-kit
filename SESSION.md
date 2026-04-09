@@ -1,10 +1,14 @@
-# SESSION — 2026-04-09 22:25
+# SESSION — 2026-04-09
 
 ## Проект
-kit
+kit (Кіт, дев-агент)
 
 ## Що зробили
-побудували систему чекпоінтів SESSION.md + chkp.sh
+Побудували систему чекпоінтів: chkp.sh + SESSION.md для всіх проектів. Оновили BOOTSTRAP.md — Кіт тепер читає SESSION.md при старті.
 
 ## Наступний крок
-пофіксувати регресійний тест в insilver-v3
+Додати виклик chkp в авто-checkpoint_tracker.py (по 50 tool calls / 45 хв)
+
+## Контекст
+chkp: /home/sashok/.openclaw/workspace/kit/chkp.sh
+alias chkp в .bashrc
