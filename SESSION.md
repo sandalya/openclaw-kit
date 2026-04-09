@@ -1,10 +1,10 @@
-# SESSION — 2026-04-09 22:31
+# SESSION — 2026-04-09 22:47
 
 ## Проект
 kit
 
 ## Що зробили
-побудували систему SESSION.md + chkp для всіх проектів, актуалізували всі SESSION.md
+пофіксували регресійний тест insilver-v3 + додали chkp в checkpoint_tracker.py
 
 ## Наступний крок
-пофіксувати регресійний тест insilver-v3 + додати chkp в checkpoint_tracker.py Кота
+оновити SESSION.md + тест chkp команди

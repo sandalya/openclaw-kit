@@ -48,6 +48,33 @@ def reset_checkpoint():
     data['last_checkpoint'] = time.time()
     save_tracker(data)
 
+
+def run_chkp(project, description, next_step, context='', context_update=''):
+    """Виконати чекпоінт: SESSION.md + git + опційно CONTEXT.md"""
+    import subprocess
+    from datetime import datetime
+
+    workspace = Path.home() / '.openclaw' / 'workspace'
+
+    # 1. Запускаємо chkp.sh
+    chkp_sh = workspace / 'kit' / 'chkp.sh'
+    args = [str(chkp_sh), project, description, next_step]
+    if context:
+        args.append(context)
+    subprocess.run(['bash'] + args)
+
+    # 2. Якщо є оновлення контексту — append в CONTEXT.md
+    if context_update:
+        context_file = workspace / project / 'CONTEXT.md'
+        date_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+        block = f"\n## {date_str}\n{context_update}\n"
+        with open(context_file, 'a', encoding='utf-8') as f:
+            f.write(block)
+        print(f"\n✅ CONTEXT.md оновлено: {context_file}")
+
+    # 3. Скидаємо лічильник
+    reset_checkpoint()
+
 if __name__ == '__main__':
     import sys
     if len(sys.argv) > 1:
@@ -57,6 +84,17 @@ if __name__ == '__main__':
             increment_tool_calls()
         elif sys.argv[1] == 'reset':
             reset_checkpoint()
+        elif sys.argv[1] == 'chkp':
+            if len(sys.argv) < 5:
+                print("Usage: checkpoint_tracker.py chkp <project> <description> <next_step> [context] [context_update]")
+                sys.exit(1)
+            run_chkp(
+                project=sys.argv[2],
+                description=sys.argv[3],
+                next_step=sys.argv[4],
+                context=sys.argv[5] if len(sys.argv) > 5 else '',
+                context_update=sys.argv[6] if len(sys.argv) > 6 else ''
+            )
         elif sys.argv[1] == 'status':
             data = load_tracker()
             print(f"Tool calls: {data['tool_calls']}/50")
