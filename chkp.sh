@@ -29,7 +29,7 @@ else
     read -r NEXT_STEP
 fi
 
-if [ "$#" -ge 4 ]; then
+if [ $# -ge 4 ]; then
     EXTRA="$4"
 else
     echo "Важливий контекст (Enter щоб пропустити):"
