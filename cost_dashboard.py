@@ -39,45 +39,60 @@ def dim(t):    return color(t, "2")
 def parse_openclaw_logs():
     """Читає логи OpenClaw і витягає використання токенів."""
     results = []
-    log_path = WORKSPACE / "logs" / "openclaw.log"
-    journal_cmd = "journalctl -u openclaw --no-pager -n 2000 2>/dev/null"
-
+    
+    # Новий шлях — читаємо session файли OpenClaw
+    sessions_dir = Path.home() / ".openclaw" / "agents" / "main" / "sessions"
+    
     lines = []
+    
+    # Читаємо всі .jsonl файли з сесій за останні 7 днів
+    if sessions_dir.exists():
+        for session_file in sessions_dir.glob("*.jsonl"):
+            try:
+                # Перевіряємо дату модифікації файлу
+                if (datetime.now() - datetime.fromtimestamp(session_file.stat().st_mtime)).days <= 7:
+                    with open(session_file, 'r') as f:
+                        lines.extend(f.readlines())
+            except Exception:
+                continue
 
-    if log_path.exists():
-        try:
-            lines = log_path.read_text(errors="ignore").splitlines()
-        except Exception:
-            pass
-
-    if not lines:
-        try:
-            lines = os.popen(journal_cmd).read().splitlines()
-        except Exception:
-            pass
-
-    # Шукаємо рядки з usage/tokens
-    token_pattern = re.compile(
-        r"(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}).*?"
-        r"input[_\s]tokens?[:\s]+(\d+).*?output[_\s]tokens?[:\s]+(\d+)",
-        re.IGNORECASE
-    )
-    model_pattern = re.compile(r"(claude-sonnet|claude-opus|claude-haiku|gpt-4o|gpt-4)", re.IGNORECASE)
-
+    # Парсимо JSON записи з usage даними
     for line in lines:
-        m = token_pattern.search(line)
-        if m:
-            date_str, time_str, inp, out = m.group(1), m.group(2), int(m.group(3)), int(m.group(4))
-            model_m = model_pattern.search(line)
-            model = model_m.group(1).lower() if model_m else "claude-sonnet"
-            results.append({
-                "date": date_str,
-                "time": time_str,
-                "model": model,
-                "input": inp,
-                "output": out,
-                "source": "openclaw"
-            })
+        try:
+            data = json.loads(line.strip())
+            if data.get("type") == "message" and "message" in data:
+                msg = data["message"]
+                usage = msg.get("usage", {})
+                if usage and "input" in usage and "output" in usage:
+                    # Парсимо дату з timestamp
+                    timestamp = data.get("timestamp", "")
+                    if timestamp:
+                        dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                        date_str = dt.strftime("%Y-%m-%d")
+                        time_str = dt.strftime("%H:%M")
+                    else:
+                        continue
+                        
+                    model = msg.get("model", "claude-sonnet")
+                    if "sonnet" in model:
+                        model = "claude-sonnet"
+                    elif "opus" in model:
+                        model = "claude-opus"
+                    elif "haiku" in model:
+                        model = "claude-haiku"
+                    elif "gpt-4" in model:
+                        model = "gpt-4"
+                        
+                    results.append({
+                        "date": date_str,
+                        "time": time_str,
+                        "model": model,
+                        "input": usage["input"],
+                        "output": usage["output"],
+                        "source": "openclaw"
+                    })
+        except (json.JSONDecodeError, KeyError, ValueError):
+            continue
 
     return results
 

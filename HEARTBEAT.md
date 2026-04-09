@@ -52,15 +52,14 @@ python3 ~/.openclaw/workspace/cost_dashboard.py --quiet
 
 ---
 
-## Ранковий звіт (10:00)
+## Cost Tracking (по запиту)
 
-```bash
-# Автоматичний формат для Telegram
-echo "🐱 $(date '+%d.%m.%Y')"
-echo "InSilver: $(systemctl is-active insilver-v3) ($(systemctl show insilver-v3 -p ActiveEnterTimestamp --value | cut -d' ' -f2-3))"
-echo "Pi5: $(free | awk 'NR==2{printf "RAM %d%%", $3/$2*100}') | $(df -h / | awk 'NR==2{printf "Disk %s", $5}')"
-python3 ~/.openclaw/workspace/cost_dashboard.py --quiet
-```
+Автоматичний щоденний cost analysis **ВІДКЛЮЧЕНО** (за запитом Сашка 28.03.2026).
+
+**Cost tracking підхід:**
+- 💰 Трекаю витрати "під капотом" через cost warnings  
+- 📊 Cost analysis тільки коли Сашко попросить
+- 🎯 `cost_dashboard.py` доступний для ручного запуску
 
 ---
 

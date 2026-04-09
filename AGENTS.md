@@ -307,9 +307,10 @@ exec("ls -la path/ | tee /tmp/data && grep pattern /tmp/data | awk commands")
 ```
 
 ### 💰 Cost Awareness (MEDIUM чутливість):
-**ПОПЕРЕДЖАЙ перед дорогими операціями:**
 
-#### 🟡 Триггери попереджень:
+**Трекінг "під капотом" без щоденних звітів** (оновлено 28.03.2026)
+
+#### 🟡 Попереджаю перед дорогими операціями:
 - Операції >$0.50 (оцінка токенів)
 - >6-8 tool calls підряд  
 - Read файлів >50KB загалом
@@ -324,4 +325,18 @@ exec("ls -la path/ | tee /tmp/data && grep pattern /tmp/data | awk commands")
 🤔 Продовжити зараз чи розбити на етапи?
 ```
 
-**Мета:** Звичайний запит ≤3-4 tool calls, складний ≤6 (з попередженням).
+#### 📊 Cost Analysis: 
+- **По запиту** — коли Сашко попросить `cost_dashboard.py`
+- **Автоматично** — відключено, не потрібен щоденний звіт
+
+#### 📈 AI Operations Tracking (NEW):
+**В кінці КОЖНОЇ задачі:**
+```python
+from ai_tracker import log_operation
+log_operation("що робив", ["tool1", "tool2"], context="чому", efficiency="high/medium/low", category="development/monitoring/debugging")
+```
+
+**Categories:** development, monitoring, debugging, analysis, documentation, infrastructure
+**Efficiency:** high (багато результату/мало токенів), medium, low
+
+**Мета:** Звичайний запрос ≤3-4 tool calls, складний ≤6 (з попередженням).
