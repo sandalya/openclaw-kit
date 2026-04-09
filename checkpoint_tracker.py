@@ -59,8 +59,7 @@ def run_chkp(project, description, next_step, context='', context_update=''):
     # 1. Запускаємо chkp.sh
     chkp_sh = workspace / 'kit' / 'chkp.sh'
     args = [str(chkp_sh), project, description, next_step]
-    if context:
-        args.append(context)
+    args.append(context)  # завжди передаємо 4-й аргумент (може бути порожнім)
     subprocess.run(['bash'] + args)
 
     # 2. Якщо є оновлення контексту — append в CONTEXT.md
