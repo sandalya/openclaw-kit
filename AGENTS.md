@@ -340,3 +340,21 @@ log_operation("що робив", ["tool1", "tool2"], context="чому", efficie
 **Efficiency:** high (багато результату/мало токенів), medium, low
 
 **Мета:** Звичайний запрос ≤3-4 tool calls, складний ≤6 (з попередженням).
+
+---
+
+## Аліаси агентів (Pi5)
+Схема: [агент]-[дія]. Дії: start stop rs st log live cd.
+
+| Агент | Сервіс | Логи |
+|----------|------------------|---------------------------------|
+| insilver | insilver-v3 | sudo systemctl; bot.log |
+| abby | abby | sudo systemctl; bot.log |
+| maggy | household_agent | sudo systemctl; bot.log |
+| sam | sam | sudo systemctl; journalctl |
+| kit | openclaw-gateway | systemctl --user; journalctl |
+
+Загальні: st-all, rs-all.
+Довідка в терміналі: команда `agents`.
+
+Якщо Сашко питає про аліаси — виводь цю таблицю і нагадуй про `agents`.

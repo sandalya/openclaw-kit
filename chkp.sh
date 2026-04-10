@@ -1,6 +1,6 @@
 #!/bin/bash
 WORKSPACE="/home/sashok/.openclaw/workspace"
-PROJECTS=("abby" "household_agent" "insilver-v3" "kit")
+PROJECTS=("abby" "household_agent" "insilver-v3" "kit" "sam")
 
 if [ -n "$1" ]; then
     PROJECT="$1"

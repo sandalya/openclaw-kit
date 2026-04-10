@@ -5,12 +5,22 @@
 
 ---
 
-## Проект: Еббі (samuel-v1)
+## Проект: Еббі
 
-**Що це:** Telegram-бот для дизайнера Ксюші (дружини Сашка). Спочатку називався samuel-v1, перейменований на Еббі.
+**Що це:** Telegram-бот-асистент для дизайнера Ксюші (дружини Сашка). Генерує HTML макети і зображення через Gemini.
 **Репозиторій:** `~/.openclaw/workspace/abby/`
-**Сервіс:** `samuel-v1.service` (але запускається як `abby/main.py` напряму, не через systemd)
-**Примітка:** `systemctl` показує inactive, але процес живий через Python напряму.
+**Сервіс:** `abby.service` (sudo systemctl)
+**Логи:** `~/.openclaw/workspace/abby/logs/bot.log`
+**⚠️ Ніяких "Samuel" — назва назавжди Еббі**
+
+---
+
+## Проект: Сем (sam)
+
+**Що це:** Особистий агент Сашка для навчання AI. Модулі: digest, catchup, science, curriculum.
+**Репозиторій:** `~/.openclaw/workspace/sam/`
+**Сервіс:** `sam.service` (sudo systemctl)
+**Логи:** тільки systemd journal — `journalctl -u sam -f --no-pager` (файлових логів немає)
 
 ---
 

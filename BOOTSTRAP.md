@@ -16,8 +16,9 @@
 | Проект | Папка | Systemd | Опис |
 |--------|-------|---------|------|
 | InSilver v3 | ../insilver-v3/ | insilver-v3 | Telegram-бот для ювелірки Влада |
-| Еббі (samuel-v1) | ../abby/ | samuel-v1 | Telegram-бот для дизайнера Ксюші |
+| Еббі | ../abby/ | abby | Telegram-бот для дизайнера Ксюші |
 | Меггі | ../household_agent/ | household_agent | Домашній асистент |
+| Сем | ../sam/ | sam | Особистий агент навчання AI |
 | Кіт (я) | ~/.openclaw/workspace/kit/ | openclaw-gateway | Дев-агент |
 
 ## При старті сесії
