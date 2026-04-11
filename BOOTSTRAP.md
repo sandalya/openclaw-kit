@@ -17,6 +17,7 @@
 |--------|-------|---------|------|
 | InSilver v3 | ../insilver-v3/ | insilver-v3 | Telegram-бот для ювелірки Влада |
 | Еббі | ../abby/ | abby | Telegram-бот для дизайнера Ксюші |
+| Гарсія | ../garcia/ | garcia | Навчальний асистент Ксюші з packaging design (форк Сема, персона Пенелопи Гарсія) |
 | Меггі | ../household_agent/ | household_agent | Домашній асистент |
 | Сем | ../sam/ | sam | Особистий агент навчання AI |
 | Кіт (я) | ~/.openclaw/workspace/kit/ | openclaw-gateway | Дев-агент |
@@ -28,7 +29,7 @@
 3. Перевір статус потрібного сервісу
 4. Привітайся у форматі:
    Кіт [дата]
-   Проекти: insilver-v3 [статус] | abby [статус] | household_agent [статус]
+   Проекти: insilver-v3 [статус] | abby [статус] | garcia [статус] | household_agent [статус]
    Далі: [пріоритети з memory]
 
 ## Розумний чекпоінт workflow
