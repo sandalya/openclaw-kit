@@ -149,3 +149,25 @@ journalctl -u openclaw -f --no-pager
 
 *Останнє оновлення: 2026-03-24*
 *Наступне оновлення: додати результати stress-тестів Pi5*
+---
+
+## #TOOLS — Backlog по tool use / архітектурі
+
+### ✅ Зроблено
+- Меггі: tool use для shopping/inventory/freezer/recipe мутацій
+- Меггі: tool_choice=none на фінальному виклику після tool_result
+- Меггі: asyncio.to_thread для Metro операцій (не блокує event loop)
+
+### 🔲 InSilver
+- Видалити `analyze_message_context` з `core/ai.py` — dead code, не впливає на відповіді Claude, тільки марний overhead
+
+### 🔲 Abby
+- Нічого не потрібно зараз. Перевірити якщо з'являться мутації стану.
+
+### 🔲 Garcia (майбутнє)
+- Якщо будуть мутації стану (прогрес навчання, нотатки до тем) — tool use доречний по тій самій схемі що в Меггі
+
+### 📌 Правило
+- Tool use тільки де є мутації стану і кілька різних дій
+- Для клієнтських ботів (InSilver) — мінімум round-trips, швидкість важливіша
+- pick_best_product в metro.py — залишити як є (JSON парсинг), не tool use
