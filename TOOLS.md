@@ -1,54 +1,43 @@
-# TOOLS.md - Essential Guide
+# TOOLS.md — Технічний довідник
 
-## 🇺🇦 УКРАЇНСЬКА МОВА - Key Rules
+## SSH патчинг (стандарт Сашка)
 
-**Граматика:**
-- Майбутній час: напишеш (не "писатимеш")  
-- Дієслова руху: йди (не "ходи"), йдеш (не "идёшь")
-- Прикметники: гарний/добрий (не "хороший"), цікавий (не "интересный")
+### Для невеликих змін
+sed -i 's/old/new/g' file.py
 
-**Консультант фрази:**
-```
-✅ "Вітаємо Вас! Розкажіть, що вас цікавить"
-✅ "Слухаю вас" / "Який варіант подобається більше?"  
-✅ "Не впевнений, переконаюсь у майстра"
-✅ "Дякую за замовлення. Бережіть себе!"
-❌ НІКОЛИ російське: "Привет", "Спасибо", "До встречи"
-```
+### Для великих блоків — через Python patch
+cat > /tmp/patch.py << 'EOF'
+content = """..."""
+with open('path/to/file', 'w') as f:
+    f.write(content)
+EOF
+python3 /tmp/patch.py
 
----
+Всередині triple quotes пиши \n замість 
+ щоб уникнути SyntaxError.
+НІКОЛИ не використовувати base64 або scp для патчингу.
 
-## ⚙️ РОЗРОБКА
+## Перевірка після змін
+tail -f [шлях_до_логів]
+journalctl -u [сервіс] -f --no-pager
+Завжди запускай логи ПЕРЕД тестовим повідомленням боту.
 
-### InSilver Bot Commands
-```bash
-# Статус і логи
-sudo systemctl status insilver-v3
-tail -f ~/.openclaw/workspace/insilver-v3/logs/bot.log
-
-# Розробка  
-cd ~/.openclaw/workspace/insilver-v3
+## Git workflow
 git status && git log --oneline -3
+git add -A && git commit -m "feat: [опис]" && git push
+Швидкі команди: гіт / гіткіт / фікс / чкп — див. COMMANDS.md
 
-# КРИТИЧНО: Перед restart - перевір дублікати
-ps aux | grep main.py | grep -v grep
-```
+## Системні утиліти Pi5
+free -m          # RAM
+df -h            # диск
+uptime           # навантаження
+ps aux | grep main.py | grep -v grep   # дублікати процесів
 
-### SSH Аліаси (швидкі команди)
-```bash
-startbot     # systemd start insilver-v3
-stopbot      # systemd stop insilver-v3
-reset-bot    # restart insilver-v3
-statusbot    # status insilver-v3  
-logs-bot     # tail bot.log
-```
+## Граматичні підказки (українська)
+- Майбутній час: напишеш (не "писатимеш")
+- Дієслова руху: йди (не "ходи")
+- гарний/добрий (не "хороший")
 
-**Як дізнатись аліаси:** *"покажи мої аліаси"*
-
----
-
-## 🎤 КЛЮЧОВІ РЕСУРСИ
-
-**Мова:** Українська (обов'язково, не російська)  
-**Стиль:** Людський, вічливий, професійний консультант  
-**Проект:** InSilver v3 Telegram бот для ювелірної майстерні
+> Мовна політика — див. SOUL.md
+> Аліаси і логи по ботах — див. ECOSYSTEM.md
+> Команди гіт/чкп/фікс — див. COMMANDS.md

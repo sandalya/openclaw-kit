@@ -113,3 +113,7 @@ tail -5 ~/.openclaw/workspace/insilver-v3/logs/bot.log | grep -E "(ERROR|CRITICA
 
 *Спрощено: 2026-03-24*  
 *Фокус: автоматизація через OpenClaw heartbeat + мінімальні скрипти*
+## Що включає lightContext
+При heartbeat НЕ завантажувати: ECOSYSTEM.md, TOOLS.md, MEMORY.md, memory/*.md
+Тільки: BOOTSTRAP.md (для ідентифікації) + bash скрипти перевірки.
+Мета: мінімізувати вартість heartbeat (~$0.01 замість ~$0.05).

@@ -1,7 +1,5 @@
 # TOOLS_SUMMARY.md - Quick Reference
 
-## 🇺🇦 Мова: Тільки Українська
-**Ніколи російська.** Україна веде війну 4+ роки.
 
 ## 🤖 InSilver Консультант  
 **Модель:** GPT-4o + GPT-4o-mini (escalation)  
