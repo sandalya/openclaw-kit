@@ -25,11 +25,17 @@
 ### Sam (`sam/`)
 - **Призначення:** AI/кар'єрний асистент Сашка (новини + навчання)
 - **Стек:** Python, python-telegram-bot, Claude (claude-sonnet-4-20250514)
-- **Архітектура:** main.py + modules/ (base, digest, catchup, curriculum, onboarding, science)
-- **AI:** call_claude / call_claude_with_search
+- **Архітектура:** main.py + modules/ + core/ + shared/
+- **Модулі:** base, digest, catchup, curriculum, onboarding, science, hub, router, proactive, state_manager, jobs, podcast, notebooklm
+- **core/:** tools.py (SAM_TOOLS + execute_tool для tool use)
+- **AI:** AgentBase (agent_base.py) + handle_chat_with_tools (agentic loop, до 3 ітерацій)
+- **Tool Use:** get_learning_state, update_progress, get_hub, search_notebooks, advance_topic
+- **Smart Router:** modules/router.py — haiku класифікує intent (hub/curriculum/digest/science/catchup/jobs/cost/chat)
+- **Proactive Engine:** modules/proactive.py — перевіряє стан перед daily digest
 - **Persona:** Samwise UA
-- **Дані:** data/, profile.json
-- **Команди:** /digest /science /catchup /cur /onboarding
+- **Дані:** data/ (curriculum.json, learning_state.json, notebooklm_notebooks.json, podcasts_state.json)
+- **Команди:** /digest /science /catchup /cur /onboarding /hub /cost /podcast /notebooks
+- **Генерація:** NotebookLM (video/podcast/flashcards/slides/infographic) — atomic write, in_progress tracking, auto-resume при ребуті
 - **Сервіс:** sam.service (sudo systemctl)
 - **Логи:** тільки journalctl (файлових логів немає)
 

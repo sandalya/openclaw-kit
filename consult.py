@@ -140,7 +140,7 @@ def main():
   epilog="""
 Приклади:
  python consult.py "Як обробити випадок коли токен протух?"
- python consult.py "Переглянь мій план" --type review --context DEV_CHECKPOINT.md
+ python consult.py "Переглянь мій план" --type review --context HOT.md
  python consult.py "Баг у парсері" --type bug --status "вирішено"
  """,
  )
@@ -154,7 +154,7 @@ def main():
  parser.add_argument(
   "--context", "-c",
   metavar="FILE",
-  help="Шлях до файлу з додатковим контекстом (напр. DEV_CHECKPOINT.md)",
+  help="Шлях до файлу з додатковим контекстом (напр. HOT.md)",
  )
  parser.add_argument(
   "--status", "-s",
